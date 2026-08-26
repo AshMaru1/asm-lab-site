@@ -56,24 +56,35 @@ def parse_frontmatter(text):
 
 def inline(text):
     text = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
-    text = re.sub(r"\[(.+?)\]\((.+?)\)", r'<a href="\2">\1</a>', text)
+    # Only treat [x](y) as a real link when y looks like a URL/path/anchor.
+    # Content uses bare [商品A]-style bracket placeholders that are often
+    # immediately followed by an unrelated "(...)" aside in the same sentence
+    # (e.g. "[商品A]か[商品E](計量不要)"), which must NOT become a link.
+    text = re.sub(r"\[(.+?)\]\((https?://[^)]+|/[^)]*|#[^)]*)\)", r'<a href="\2">\1</a>', text)
     return text
+
+
+ORDERED_ITEM = re.compile(r"^\d+\.\s+(.*)")
 
 
 def md_to_html(text):
     lines = text.splitlines()
     html = []
     i = 0
-    in_list = False
-    in_table = False
+    list_type = None  # None, "ul", or "ol"
+
+    def close_list():
+        nonlocal list_type
+        if list_type:
+            html.append(f"</{list_type}>")
+            list_type = None
+
     while i < len(lines):
         line = lines[i]
         stripped = line.strip()
 
         if not stripped:
-            if in_list:
-                html.append("</ul>")
-                in_list = False
+            close_list()
             i += 1
             continue
 
@@ -111,16 +122,25 @@ def md_to_html(text):
             continue
 
         if stripped.startswith("- ") or stripped.startswith("* "):
-            if not in_list:
+            if list_type != "ul":
+                close_list()
                 html.append("<ul>")
-                in_list = True
+                list_type = "ul"
             html.append(f"<li>{inline(stripped[2:])}</li>")
             i += 1
             continue
-        else:
-            if in_list:
-                html.append("</ul>")
-                in_list = False
+
+        ordered_match = ORDERED_ITEM.match(stripped)
+        if ordered_match:
+            if list_type != "ol":
+                close_list()
+                html.append("<ol>")
+                list_type = "ol"
+            html.append(f"<li>{inline(ordered_match.group(1))}</li>")
+            i += 1
+            continue
+
+        close_list()
 
         if stripped == "---":
             html.append("<hr>")
@@ -130,8 +150,7 @@ def md_to_html(text):
         html.append(f"<p>{inline(stripped)}</p>")
         i += 1
 
-    if in_list:
-        html.append("</ul>")
+    close_list()
     return "\n".join(html)
 
 
