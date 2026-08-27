@@ -15,13 +15,29 @@ content/published/*.md と legal/*.md をHTMLに変換して site/ 以下に出�
 import re
 import sys
 from pathlib import Path
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
+SITE_BASE_URL = "https://ashmaru1.github.io/asm-lab-site/"
 
-TEMPLATE = """<meta charset="UTF-8">
+TEMPLATE = """<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{title} | ASM Lab</title>
+<meta name="description" content="{description}">
+{robots_tag}<link rel="canonical" href="{canonical_url}">
+<meta property="og:type" content="article">
+<meta property="og:title" content="{title} | ASM Lab">
+<meta property="og:description" content="{description}">
+<meta property="og:url" content="{canonical_url}">
+<meta property="og:site_name" content="ASM Lab">
+<meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="{css_path}styles.css">
+</head>
+<body>
 <header>
   <div class="inner">
     <a class="brand" href="{css_path}index.html">ASM Lab</a>
@@ -38,7 +54,28 @@ TEMPLATE = """<meta charset="UTF-8">
   </div>
   <div>&copy; ASM</div>
 </footer>
+</body>
+</html>
 """
+
+
+def make_description(meta, body_md):
+    if meta.get("description"):
+        return escape_attr(meta["description"])
+    for line in body_md.splitlines():
+        s = line.strip()
+        if not s or s.startswith(("#", ">", "|", "-", "*")):
+            continue
+        s = re.sub(r"\*\*(.+?)\*\*", r"\1", s)
+        s = re.sub(r"\[(.+?)\]\([^)]*\)", r"\1", s)
+        if len(s) > 110:
+            s = s[:110] + "…"
+        return escape_attr(s)
+    return escape_attr("ASM Labの記事です。")
+
+
+def escape_attr(text):
+    return text.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 def parse_frontmatter(text):
@@ -155,12 +192,21 @@ def md_to_html(text):
     return "\n".join(html)
 
 
-def build_file(src: Path, dest: Path, css_path: str):
+def build_file(src: Path, dest: Path, css_path: str, noindex: bool = False):
     meta, body_md = parse_frontmatter(src.read_text(encoding="utf-8"))
     title = meta.get("title", src.stem)
     body_html = md_to_html(body_md)
+    description = make_description(meta, body_md)
+    canonical_url = SITE_BASE_URL + str(dest.relative_to(SITE)).replace("\\", "/")
+    robots_tag = '<meta name="robots" content="noindex">\n' if noindex else ""
     dest.parent.mkdir(parents=True, exist_ok=True)
-    dest.write_text(TEMPLATE.format(title=title, body=body_html, css_path=css_path), encoding="utf-8")
+    dest.write_text(
+        TEMPLATE.format(
+            title=title, body=body_html, css_path=css_path,
+            description=description, canonical_url=canonical_url, robots_tag=robots_tag,
+        ),
+        encoding="utf-8",
+    )
     print(f"built: {dest.relative_to(ROOT)}")
 
 
@@ -171,7 +217,7 @@ def main():
 
     preview_dir = SITE / "articles-preview"
     for md_file in (ROOT / "content" / "drafts").glob("*.md"):
-        build_file(md_file, preview_dir / (md_file.stem + ".html"), "../")
+        build_file(md_file, preview_dir / (md_file.stem + ".html"), "../", noindex=True)
 
     legal_map = {
         "privacy_policy.md": "privacy.html",
@@ -183,11 +229,27 @@ def main():
             build_file(src, SITE / dest_name, "")
 
     build_index()
+    build_sitemap()
+    build_robots()
 
 
-INDEX_TEMPLATE = """<meta charset="UTF-8">
-<title>ASM Lab</title>
+INDEX_TEMPLATE = """<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASM Lab | 日用品・消耗品の比較記録</title>
+<meta name="description" content="毎日使う消耗品・日用品を、価格やレビューをもとに比較する記録サイト。">
+<link rel="canonical" href="{base_url}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ASM Lab | 日用品・消耗品の比較記録">
+<meta property="og:description" content="毎日使う消耗品・日用品を、価格やレビューをもとに比較する記録サイト。">
+<meta property="og:url" content="{base_url}">
+<meta property="og:site_name" content="ASM Lab">
+<meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="styles.css">
+</head>
+<body>
 <header>
   <div class="inner">
     <a class="brand" href="index.html">ASM Lab</a>
@@ -207,6 +269,8 @@ INDEX_TEMPLATE = """<meta charset="UTF-8">
   </div>
   <div>&copy; ASM</div>
 </footer>
+</body>
+</html>
 """
 
 
@@ -228,8 +292,26 @@ def build_index():
             f'<span class="index-meta">{md_file.stem[:8]}</span>'
             f"</a></li>"
         )
-    (SITE / "index.html").write_text(INDEX_TEMPLATE.format(items="\n".join(items)), encoding="utf-8")
+    (SITE / "index.html").write_text(INDEX_TEMPLATE.format(items="\n".join(items), base_url=SITE_BASE_URL), encoding="utf-8")
     print("built: site/index.html")
+
+
+def build_sitemap():
+    """公開済みの全ページを含むsitemap.xmlを生成する。"""
+    urls = [SITE_BASE_URL, SITE_BASE_URL + "privacy.html", SITE_BASE_URL + "tokushoho.html"]
+    for md_file in sorted((ROOT / "content" / "published").glob("*.md")):
+        urls.append(SITE_BASE_URL + f"articles/{md_file.stem}.html")
+
+    entries = "\n".join(f"  <url><loc>{quote(u, safe=':/')}</loc></url>" for u in urls)
+    xml = f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{entries}\n</urlset>\n'
+    (SITE / "sitemap.xml").write_text(xml, encoding="utf-8")
+    print("built: site/sitemap.xml")
+
+
+def build_robots():
+    text = f"User-agent: *\nAllow: /\nSitemap: {SITE_BASE_URL}sitemap.xml\n"
+    (SITE / "robots.txt").write_text(text, encoding="utf-8")
+    print("built: site/robots.txt")
 
 
 if __name__ == "__main__":

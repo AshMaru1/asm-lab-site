@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ashmaru1.github.io/asm-lab-site/sitemap.xml
