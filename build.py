@@ -34,6 +34,7 @@ TEMPLATE = """<meta charset="UTF-8">
 <footer>
   <div>
     <a href="{css_path}privacy.html">プライバシーポリシー</a>
+    <a href="{css_path}tokushoho.html">特定商取引法に基づく表示</a>
   </div>
   <div>&copy; ASM</div>
 </footer>
@@ -174,6 +175,7 @@ def main():
 
     legal_map = {
         "privacy_policy.md": "privacy.html",
+        "tokushoho.md": "tokushoho.html",
     }
     for src_name, dest_name in legal_map.items():
         src = ROOT / "legal" / src_name
@@ -201,6 +203,7 @@ INDEX_TEMPLATE = """<meta charset="UTF-8">
 <footer>
   <div>
     <a href="privacy.html">プライバシーポリシー</a>
+    <a href="tokushoho.html">特定商取引法に基づく表示</a>
   </div>
   <div>&copy; ASM</div>
 </footer>
