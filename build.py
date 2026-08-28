@@ -279,6 +279,10 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
   <ul class="index-list">
 {items}
   </ul>
+  <h2>無料ツール</h2>
+  <ul class="index-list">
+    <li><a href="tools/estimate-generator.html"><span class="index-num mono">T1</span><span class="index-title">見積書かんたん作成ツール</span><span class="index-meta">無料</span></a></li>
+  </ul>
 </main>
 <footer>
   <div>
@@ -326,7 +330,7 @@ def build_index():
 
 def build_sitemap():
     """公開済みの全ページを含むsitemap.xmlを生成する。"""
-    urls = [SITE_BASE_URL, SITE_BASE_URL + "privacy.html", SITE_BASE_URL + "tokushoho.html"]
+    urls = [SITE_BASE_URL, SITE_BASE_URL + "privacy.html", SITE_BASE_URL + "tokushoho.html", SITE_BASE_URL + "tools/estimate-generator.html"]
     for md_file in sorted((ROOT / "content" / "published").glob("*.md")):
         urls.append(SITE_BASE_URL + f"articles/{md_file.stem}.html")
 

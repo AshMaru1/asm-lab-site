@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>見積書かんたん作成ツール | ASM Lab</title>
+<meta name="description" content="発注者名・品目・単価を入力するだけで、印刷できる見積書をその場で作成できる無料ツールです。データはブラウザ内だけで処理され、サーバーには送信されません。">
+<link rel="canonical" href="https://ashmaru1.github.io/asm-lab-site/tools/estimate-generator.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="見積書かんたん作成ツール | ASM Lab">
+<meta property="og:description" content="発注者名・品目・単価を入力するだけで、印刷できる見積書をその場で作成できる無料ツールです。">
+<meta property="og:url" content="https://ashmaru1.github.io/asm-lab-site/tools/estimate-generator.html">
+<meta property="og:site_name" content="ASM Lab">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../styles.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"見積書かんたん作成ツール","applicationCategory":"BusinessApplication","operatingSystem":"Any (ブラウザ)","offers":{"@type":"Offer","price":"0","priceCurrency":"JPY"},"description":"発注者名・品目・単価を入力するだけで印刷できる見積書を作成できる無料ツール","url":"https://ashmaru1.github.io/asm-lab-site/tools/estimate-generator.html"}</script>
+<style>
+  .tool-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+  @media (min-width: 880px) {
+    .tool-grid { grid-template-columns: 1fr 1fr; align-items: start; }
+  }
+  .field { margin-bottom: 1.1rem; }
+  .field label {
+    display: block;
+    font-size: 0.78rem;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+    letter-spacing: 0.03em;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--fg);
+    font-family: inherit;
+    font-size: 0.95rem;
+  }
+  .field textarea { resize: vertical; min-height: 4.5rem; }
+  .row-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .items-table { width: 100%; border-collapse: collapse; margin-bottom: 0.8rem; }
+  .items-table th { text-align: left; font-size: 0.72rem; color: var(--muted); font-weight: 400; padding: 0.3rem 0.4rem; }
+  .items-table td { padding: 0.3rem 0.4rem; }
+  .items-table input { width: 100%; padding: 0.45rem 0.5rem; border: 1px solid var(--line); border-radius: 6px; background: var(--bg-card); color: var(--fg); font-size: 0.9rem; }
+  .items-table td.qty input, .items-table td.price input { text-align: right; }
+  .items-table td.del { width: 2.2rem; text-align: center; }
+  .btn {
+    display: inline-block;
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: var(--bg-card);
+    color: var(--fg);
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-primary:hover { opacity: 0.9; color: #fff; }
+  .btn-del { border: none; background: transparent; color: var(--muted); cursor: pointer; font-size: 1rem; }
+  .btn-del:hover { color: var(--accent); }
+  .toolbar { display: flex; gap: 0.6rem; flex-wrap: wrap; margin: 1.2rem 0; }
+
+  /* Preview / printable quote */
+  #preview {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 2rem 1.8rem;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 1.5rem;
+  }
+  .quote-title { font-family: 'Shippori Mincho', serif; font-size: 1.5rem; font-weight: 700; text-align: center; margin: 0 0 1.4rem; letter-spacing: 0.15em; }
+  .quote-meta { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); margin-bottom: 1.2rem; }
+  .quote-parties { display: flex; justify-content: space-between; margin-bottom: 1.4rem; gap: 1rem; }
+  .quote-to { font-size: 1.05rem; font-weight: 700; border-bottom: 2px solid var(--fg); padding-bottom: 0.3rem; }
+  .quote-from { font-size: 0.85rem; text-align: right; white-space: pre-line; }
+  .quote-total-line { font-size: 1.2rem; font-weight: 700; margin: 1rem 0 1.6rem; padding: 0.8rem 1rem; background: color-mix(in srgb, var(--accent) 8%, transparent); border-radius: 10px; display: flex; justify-content: space-between; }
+  .quote-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 1.2rem; }
+  .quote-table th { border-bottom: 2px solid var(--fg); text-align: left; padding: 0.4rem 0.3rem; font-weight: 700; font-size: 0.78rem; }
+  .quote-table td { border-bottom: 1px solid var(--line); padding: 0.5rem 0.3rem; }
+  .quote-table td.num, .quote-table th.num { text-align: right; }
+  .quote-sums { margin-left: auto; width: 60%; font-size: 0.9rem; }
+  .quote-sums div { display: flex; justify-content: space-between; padding: 0.3rem 0; }
+  .quote-sums .grand { font-weight: 700; border-top: 2px solid var(--fg); margin-top: 0.3rem; padding-top: 0.5rem; font-size: 1.05rem; }
+  .quote-note { margin-top: 1.4rem; font-size: 0.8rem; color: var(--muted); white-space: pre-line; }
+
+  @media print {
+    header, footer, .no-print { display: none !important; }
+    body { background: #fff; }
+    main { padding: 0; max-width: 100%; }
+    #preview { box-shadow: none; border: none; position: static; }
+    .tool-grid { display: block; }
+  }
+</style>
+</head>
+<body>
+<header class="no-print">
+  <div class="inner">
+    <a class="brand" href="../index.html">ASM Lab</a>
+    <div class="tagline">Daily Goods, Compared.</div>
+  </div>
+</header>
+<main>
+
+<h1>見積書かんたん作成ツール</h1>
+<p class="lede">発注者名・品目・単価を入力すると、その場で見積書のプレビューが作られます。「印刷 / PDF保存」ボタンからそのまま印刷・PDF化できます。入力内容はこのブラウザの中だけで処理され、どこにも送信されません。</p>
+
+<div class="tool-grid">
+  <div class="no-print">
+    <div class="field">
+      <label>宛先(発注者名)</label>
+      <input type="text" id="clientName" placeholder="例: 株式会社サンプル 御中">
+    </div>
+    <div class="row-pair">
+      <div class="field">
+        <label>発行日</label>
+        <input type="date" id="issueDate">
+      </div>
+      <div class="field">
+        <label>有効期限</label>
+        <input type="date" id="validUntil">
+      </div>
+    </div>
+    <div class="field">
+      <label>見積番号(空欄で自動生成)</label>
+      <input type="text" id="quoteNo" placeholder="例: Q-20260828-01">
+    </div>
+    <div class="field">
+      <label>発行者(あなたの氏名・屋号)</label>
+      <textarea id="fromInfo" placeholder="例: &#10;山田太郎(屋号: ○○デザイン)&#10;〒000-0000 東京都〇〇区…&#10;email@example.com">屋号または氏名
+住所
+連絡先(メール等)</textarea>
+    </div>
+
+    <div class="field">
+      <label>品目</label>
+      <table class="items-table" id="itemsTable">
+        <thead>
+          <tr><th>品名</th><th style="width:4.5rem">数量</th><th style="width:6.5rem">単価(円)</th><th class="del"></th></tr>
+        </thead>
+        <tbody id="itemsBody"></tbody>
+      </table>
+      <button type="button" class="btn" id="addRowBtn">+ 品目を追加</button>
+    </div>
+
+    <div class="row-pair">
+      <div class="field">
+        <label>消費税</label>
+        <select id="taxRate">
+          <option value="10">10%</option>
+          <option value="8">8%(軽減税率)</option>
+          <option value="0">非課税・税込一括</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>支払期限の目安</label>
+        <input type="text" id="paymentTerm" value="請求書発行月末締め翌月末払い">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>備考</label>
+      <textarea id="note" placeholder="納期、振込先、その他の条件など"></textarea>
+    </div>
+
+    <div class="toolbar">
+      <button type="button" class="btn btn-primary" onclick="window.print()">🖨 印刷 / PDF保存</button>
+    </div>
+  </div>
+
+  <div id="preview">
+    <div class="quote-title">御見積書</div>
+    <div class="quote-meta">
+      <span id="pvQuoteNo">見積番号: -</span>
+      <span id="pvDate">発行日: -</span>
+    </div>
+    <div class="quote-parties">
+      <div class="quote-to" id="pvClient">お客様名</div>
+      <div class="quote-from" id="pvFrom"></div>
+    </div>
+    <div class="quote-total-line">
+      <span>御見積金額</span>
+      <span id="pvGrandTotal">¥0</span>
+    </div>
+    <p style="font-size:0.85rem;">下記の通りお見積り申し上げます。</p>
+    <table class="quote-table">
+      <thead>
+        <tr><th>品名</th><th class="num">数量</th><th class="num">単価</th><th class="num">金額</th></tr>
+      </thead>
+      <tbody id="pvItems"></tbody>
+    </table>
+    <div class="quote-sums">
+      <div><span>小計</span><span id="pvSubtotal">¥0</span></div>
+      <div><span id="pvTaxLabel">消費税(10%)</span><span id="pvTax">¥0</span></div>
+      <div class="grand"><span>合計</span><span id="pvGrandTotal2">¥0</span></div>
+    </div>
+    <div class="quote-note" id="pvNote"></div>
+    <div class="quote-note" id="pvValidUntil"></div>
+  </div>
+</div>
+
+<h2>この見積書について</h2>
+<p>このツールはブラウザ上だけで動作する簡易的な見積書テンプレートです。実際の取引に使う前に、自分の屋号情報・振込先・インボイス制度に対応した登録番号(必要な場合)などを備考欄に追記してください。金額や税率の妥当性については、必ずご自身で最終確認をお願いします。</p>
+
+<h2>あわせて読みたい</h2>
+<ul>
+  <li><a href="https://note.com/fatefullife/n/n98a59624be24">経費精算でよく弾かれる項目、事前に確認すべきポイント(note、¥100)</a></li>
+  <li><a href="https://note.com/fatefullife/m/ma1d7b5d56270">仕事で困った時のテンプレート集(まとめ買いマガジン、note)</a></li>
+</ul>
+
+</main>
+<footer class="no-print">
+  <div>
+    <a href="../privacy.html">プライバシーポリシー</a>
+    <a href="../tokushoho.html">特定商取引法に基づく表示</a>
+  </div>
+  <div>&copy; ASM</div>
+</footer>
+
+<script>
+(function () {
+  const itemsBody = document.getElementById('itemsBody');
+
+  function addRow(name, qty, price) {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><input type="text" class="item-name" placeholder="例: デザイン制作費" value="' + (name || '') + '"></td>' +
+      '<td class="qty"><input type="number" class="item-qty" value="' + (qty != null ? qty : 1) + '" min="0" step="1"></td>' +
+      '<td class="price"><input type="number" class="item-price" value="' + (price != null ? price : '') + '" min="0" step="1"></td>' +
+      '<td class="del"><button type="button" class="btn-del" title="この行を削除">×</button></td>';
+    tr.querySelector('.btn-del').addEventListener('click', function () {
+      tr.remove();
+      render();
+    });
+    ['item-name', 'item-qty', 'item-price'].forEach(function (cls) {
+      tr.querySelector('.' + cls).addEventListener('input', render);
+    });
+    itemsBody.appendChild(tr);
+  }
+
+  document.getElementById('addRowBtn').addEventListener('click', function () {
+    addRow('', 1, '');
+    render();
+  });
+
+  addRow('作業項目A', 1, 30000);
+  addRow('作業項目B', 1, 15000);
+
+  const ids = ['clientName', 'issueDate', 'validUntil', 'quoteNo', 'fromInfo', 'taxRate', 'paymentTerm', 'note'];
+  ids.forEach(function (id) {
+    document.getElementById(id).addEventListener('input', render);
+    document.getElementById(id).addEventListener('change', render);
+  });
+
+  function yen(n) {
+    return '¥' + Math.round(n).toLocaleString('ja-JP');
+  }
+
+  function todayStr() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function fmtDate(v) {
+    if (!v) return '-';
+    const d = new Date(v + 'T00:00:00');
+    if (isNaN(d)) return v;
+    return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
+  }
+
+  function autoQuoteNo() {
+    const d = new Date();
+    return 'Q-' + d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+  }
+
+  function render() {
+    const clientName = document.getElementById('clientName').value.trim();
+    const issueDate = document.getElementById('issueDate').value;
+    const validUntil = document.getElementById('validUntil').value;
+    const quoteNo = document.getElementById('quoteNo').value.trim();
+    const fromInfo = document.getElementById('fromInfo').value;
+    const taxRate = parseFloat(document.getElementById('taxRate').value);
+    const paymentTerm = document.getElementById('paymentTerm').value.trim();
+    const note = document.getElementById('note').value.trim();
+
+    document.getElementById('pvClient').textContent = clientName ? clientName + ' 様' : 'お客様名';
+    document.getElementById('pvFrom').textContent = fromInfo;
+    document.getElementById('pvQuoteNo').textContent = '見積番号: ' + (quoteNo || autoQuoteNo());
+    document.getElementById('pvDate').textContent = '発行日: ' + fmtDate(issueDate || todayStr());
+
+    const rows = itemsBody.querySelectorAll('tr');
+    let subtotal = 0;
+    let html = '';
+    rows.forEach(function (tr) {
+      const name = tr.querySelector('.item-name').value || '(未入力)';
+      const qty = parseFloat(tr.querySelector('.item-qty').value) || 0;
+      const price = parseFloat(tr.querySelector('.item-price').value) || 0;
+      const amount = qty * price;
+      subtotal += amount;
+      html += '<tr><td>' + escapeHtml(name) + '</td><td class="num">' + qty + '</td><td class="num">' + yen(price) + '</td><td class="num">' + yen(amount) + '</td></tr>';
+    });
+    document.getElementById('pvItems').innerHTML = html || '<tr><td colspan="4" style="color:var(--muted)">品目を追加してください</td></tr>';
+
+    const tax = taxRate > 0 ? subtotal * (taxRate / 100) : 0;
+    const grand = subtotal + tax;
+
+    document.getElementById('pvSubtotal').textContent = yen(subtotal);
+    document.getElementById('pvTaxLabel').textContent = taxRate > 0 ? '消費税(' + taxRate + '%)' : '消費税(税込一括)';
+    document.getElementById('pvTax').textContent = yen(tax);
+    document.getElementById('pvGrandTotal').textContent = yen(grand);
+    document.getElementById('pvGrandTotal2').textContent = yen(grand);
+
+    let noteText = '';
+    if (paymentTerm) noteText += 'お支払い条件: ' + paymentTerm + '\n';
+    if (note) noteText += note;
+    document.getElementById('pvNote').textContent = noteText;
+    document.getElementById('pvValidUntil').textContent = validUntil ? 'お見積り有効期限: ' + fmtDate(validUntil) : '';
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  document.getElementById('issueDate').value = todayStr();
+  render();
+})();
+</script>
+</body>
+</html>
