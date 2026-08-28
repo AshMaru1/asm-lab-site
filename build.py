@@ -283,6 +283,7 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
   <ul class="index-list">
     <li><a href="tools/estimate-generator.html"><span class="index-num mono">T1</span><span class="index-title">見積書かんたん作成ツール</span><span class="index-meta">無料</span></a></li>
     <li><a href="tools/seo-title-checker.html"><span class="index-num mono">T2</span><span class="index-title">SEOタイトル・ディスクリプション文字数チェッカー</span><span class="index-meta">無料</span></a></li>
+    <li><a href="tools/resignation-letter-generator.html"><span class="index-num mono">T3</span><span class="index-title">退職届・退職願 かんたん作成ツール(縦書き対応)</span><span class="index-meta">無料</span></a></li>
   </ul>
 </main>
 <footer>
@@ -331,7 +332,7 @@ def build_index():
 
 def build_sitemap():
     """公開済みの全ページを含むsitemap.xmlを生成する。"""
-    urls = [SITE_BASE_URL, SITE_BASE_URL + "privacy.html", SITE_BASE_URL + "tokushoho.html", SITE_BASE_URL + "tools/estimate-generator.html", SITE_BASE_URL + "tools/seo-title-checker.html"]
+    urls = [SITE_BASE_URL, SITE_BASE_URL + "privacy.html", SITE_BASE_URL + "tokushoho.html", SITE_BASE_URL + "tools/estimate-generator.html", SITE_BASE_URL + "tools/seo-title-checker.html", SITE_BASE_URL + "tools/resignation-letter-generator.html"]
     for md_file in sorted((ROOT / "content" / "published").glob("*.md")):
         urls.append(SITE_BASE_URL + f"articles/{md_file.stem}.html")
 

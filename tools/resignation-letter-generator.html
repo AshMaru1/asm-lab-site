@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>退職届・退職願 かんたん作成ツール(縦書き対応) | ASM Lab</title>
+<meta name="description" content="氏名・退職理由・退職希望日を入力するだけで、正しい書式の退職届・退職願を作成できる無料ツールです。縦書き表示にも対応し、そのまま印刷・PDF保存できます。データはブラウザ内だけで処理され、どこにも送信されません。">
+<link rel="canonical" href="https://ashmaru1.github.io/asm-lab-site/tools/resignation-letter-generator.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="退職届・退職願 かんたん作成ツール(縦書き対応) | ASM Lab">
+<meta property="og:description" content="氏名・退職理由・退職希望日を入力するだけで、正しい書式の退職届・退職願を作成できる無料ツールです。縦書き表示にも対応。">
+<meta property="og:url" content="https://ashmaru1.github.io/asm-lab-site/tools/resignation-letter-generator.html">
+<meta property="og:site_name" content="ASM Lab">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../styles.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"退職届・退職願 かんたん作成ツール","applicationCategory":"BusinessApplication","operatingSystem":"Any (ブラウザ)","offers":{"@type":"Offer","price":"0","priceCurrency":"JPY"},"description":"氏名・退職理由・退職希望日を入力するだけで正しい書式の退職届・退職願を作成できる無料ツール(縦書き対応)","url":"https://ashmaru1.github.io/asm-lab-site/tools/resignation-letter-generator.html"}</script>
+<style>
+  .tool-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+  @media (min-width: 880px) {
+    .tool-grid { grid-template-columns: 1fr 1fr; align-items: start; }
+  }
+  .field { margin-bottom: 1.1rem; }
+  .field label {
+    display: block;
+    font-size: 0.78rem;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+    letter-spacing: 0.03em;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--fg);
+    font-family: inherit;
+    font-size: 0.95rem;
+  }
+  .field textarea { resize: vertical; min-height: 3.5rem; }
+  .row-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .toggle-row { display: flex; gap: 1.2rem; align-items: center; margin-bottom: 1.1rem; font-size: 0.9rem; }
+  .toggle-row label { display: flex; align-items: center; gap: 0.4rem; font-family: inherit; color: var(--fg); }
+  .btn {
+    display: inline-block;
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: var(--bg-card);
+    color: var(--fg);
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-primary:hover { opacity: 0.9; color: #fff; }
+  .toolbar { display: flex; gap: 0.6rem; flex-wrap: wrap; margin: 1.2rem 0; }
+
+  /* Preview */
+  #previewWrap {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 2rem 1.8rem;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 1.5rem;
+  }
+  #preview { font-family: 'Shippori Mincho', serif; }
+
+  /* 横書きレイアウト */
+  #preview.horizontal .letter-title { text-align: center; font-size: 1.5rem; font-weight: 700; letter-spacing: 0.3em; margin-bottom: 2rem; }
+  #preview.horizontal .letter-body { font-size: 1rem; line-height: 2.1; margin-bottom: 2.5rem; }
+  #preview.horizontal .letter-jigi { text-align: right; margin-bottom: 1rem; }
+  #preview.horizontal .letter-meta { text-align: right; font-size: 0.95rem; line-height: 1.9; margin-bottom: 2rem; }
+  #preview.horizontal .letter-to { font-size: 1rem; font-weight: 700; }
+
+  /* 縦書きレイアウト */
+  #preview.vertical {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    height: 32rem;
+    min-width: 100%;
+    line-height: 2.4;
+    font-size: 1.05rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  #preview.vertical .letter-title { font-size: 1.5rem; font-weight: 700; letter-spacing: 0.4em; margin-left: 1.5rem; }
+  #preview.vertical .letter-jigi { margin-left: 2.5rem; }
+  #preview.vertical .letter-body { margin-left: 2.5rem; }
+  #preview.vertical .letter-meta { margin-left: 3rem; }
+  #preview.vertical .letter-to { margin-left: 1rem; }
+  #preview.vertical .num { text-combine-upright: all; }
+
+  @media print {
+    header, footer, .no-print { display: none !important; }
+    body { background: #fff; }
+    main { padding: 0; max-width: 100%; }
+    #previewWrap { box-shadow: none; border: none; position: static; padding: 1rem; }
+    .tool-grid { display: block; }
+    #preview.vertical { height: 90vh; }
+  }
+</style>
+</head>
+<body>
+<header class="no-print">
+  <div class="inner">
+    <a class="brand" href="../index.html">ASM Lab</a>
+    <div class="tagline">Daily Goods, Compared.</div>
+  </div>
+</header>
+<main>
+
+<h1>退職届・退職願 かんたん作成ツール</h1>
+<p class="lede">氏名・退職理由・退職希望日を入力すると、正しい書式の退職届(または退職願)がその場でプレビューされます。伝統的な縦書き表示にも対応。「印刷 / PDF保存」からそのまま出力できます。入力内容はこのブラウザの中だけで処理され、どこにも送信されません。</p>
+
+<div class="tool-grid">
+  <div class="no-print">
+    <div class="field">
+      <label>書式</label>
+      <select id="docType">
+        <option value="届">退職届(退職の意思が確定している場合)</option>
+        <option value="願">退職願(退職を願い出る、まだ相談の余地がある場合)</option>
+      </select>
+    </div>
+    <div class="toggle-row">
+      <label><input type="radio" name="orient" id="orientVertical" value="vertical" checked> 縦書き(正式な書式)</label>
+      <label><input type="radio" name="orient" id="orientHorizontal" value="horizontal"> 横書き</label>
+    </div>
+
+    <div class="field">
+      <label>所属部署(任意)</label>
+      <input type="text" id="dept" placeholder="例: 営業部 営業一課">
+    </div>
+    <div class="field">
+      <label>氏名</label>
+      <input type="text" id="myName" placeholder="例: 山田 太郎">
+    </div>
+    <div class="field">
+      <label>退職理由</label>
+      <input type="text" id="reason" value="一身上の都合">
+    </div>
+    <div class="row-pair">
+      <div class="field">
+        <label>退職希望日</label>
+        <input type="date" id="retireDate">
+      </div>
+      <div class="field">
+        <label>提出日</label>
+        <input type="date" id="submitDate">
+      </div>
+    </div>
+    <div class="field">
+      <label>宛先(会社名・代表者の役職と氏名)</label>
+      <textarea id="toInfo" placeholder="例: &#10;株式会社サンプル&#10;代表取締役社長 鈴木 一郎 殿">株式会社サンプル
+代表取締役社長 鈴木 一郎 殿</textarea>
+    </div>
+
+    <div class="toolbar">
+      <button type="button" class="btn btn-primary" onclick="window.print()">🖨 印刷 / PDF保存</button>
+    </div>
+  </div>
+
+  <div id="previewWrap">
+    <div id="preview" class="vertical">
+      <div class="letter-title" id="pvTitle">退職届</div>
+      <div class="letter-jigi">私儀</div>
+      <div class="letter-body" id="pvBody"></div>
+      <div class="letter-meta" id="pvMeta"></div>
+      <div class="letter-to" id="pvTo"></div>
+    </div>
+  </div>
+</div>
+
+<h2>退職届と退職願の違い</h2>
+<p>「退職願」は退職を願い出るお願いの文書で、会社が受理する前であれば撤回できる余地があります。「退職届」は退職の意思が確定していることを届け出る文書で、原則として一方的に撤回できません。円満退職を目指す場合は、まず口頭で上司に伝えたうえで、会社の慣例に従って退職願または退職届を提出するのが一般的です。</p>
+
+<h2>このツールについて</h2>
+<p>日本のビジネス文書の慣例に従い、縦書き表示をデフォルトにしています(手書き・印刷いずれの提出でも縦書きが一般的です)。実際の提出前に、会社の指定書式(社内規定でテンプレートが決まっている場合があります)や提出先の役職・氏名に誤りがないか、必ずご自身で確認してください。</p>
+
+<h2>あわせて読みたい</h2>
+<ul>
+  <li><a href="estimate-generator.html">見積書かんたん作成ツール(無料ツール)</a></li>
+  <li><a href="seo-title-checker.html">SEOタイトル・ディスクリプション文字数チェッカー(無料ツール)</a></li>
+  <li><a href="https://note.com/fatefullife/n/n56a24ef8a377">退職を伝える時、上司への最初の1言で失敗しないための言い方(note、¥100)</a></li>
+  <li><a href="https://note.com/fatefullife/m/ma1d7b5d56270">仕事で困った時のテンプレート集(まとめ買いマガジン、note)</a></li>
+</ul>
+
+</main>
+<footer class="no-print">
+  <div>
+    <a href="../privacy.html">プライバシーポリシー</a>
+    <a href="../tokushoho.html">特定商取引法に基づく表示</a>
+  </div>
+  <div>&copy; ASM</div>
+</footer>
+
+<script>
+(function () {
+  const ids = ['docType', 'dept', 'myName', 'reason', 'retireDate', 'submitDate', 'toInfo'];
+  ids.forEach(function (id) {
+    document.getElementById(id).addEventListener('input', render);
+    document.getElementById(id).addEventListener('change', render);
+  });
+  document.getElementById('orientVertical').addEventListener('change', render);
+  document.getElementById('orientHorizontal').addEventListener('change', render);
+
+  function todayStr() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function fmtDate(v) {
+    if (!v) return '　　年　　月　　日';
+    const d = new Date(v + 'T00:00:00');
+    if (isNaN(d)) return v;
+    return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function wrapNums(s) {
+    // 縦書き時に数字が正しい向きで読めるよう、連続する数字をspanで囲む
+    return s.replace(/\d+/g, function (m) { return '<span class="num">' + m + '</span>'; });
+  }
+
+  function render() {
+    const docType = document.getElementById('docType').value;
+    const dept = document.getElementById('dept').value.trim();
+    const myName = document.getElementById('myName').value.trim() || '（氏名）';
+    const reason = document.getElementById('reason').value.trim() || '一身上の都合';
+    const retireDate = fmtDate(document.getElementById('retireDate').value);
+    const submitDate = fmtDate(document.getElementById('submitDate').value || todayStr());
+    const toInfo = document.getElementById('toInfo').value;
+    const isVertical = document.getElementById('orientVertical').checked;
+
+    document.getElementById('preview').className = isVertical ? 'vertical' : 'horizontal';
+    document.getElementById('pvTitle').textContent = docType === '届' ? '退職届' : '退職願';
+
+    const verb = docType === '届'
+      ? 'をもって退職いたします。'
+      : 'をもって退職いたしたく、ここにお願い申し上げます。';
+    const bodyText = 'この度、' + escapeHtml(reason) + 'により、' + wrapNums(escapeHtml(retireDate)) + verb;
+    document.getElementById('pvBody').innerHTML = bodyText;
+
+    let metaHtml = wrapNums(escapeHtml(submitDate)) + '<br>';
+    if (dept) metaHtml += escapeHtml(dept) + '<br>';
+    metaHtml += escapeHtml(myName) + '　印';
+    document.getElementById('pvMeta').innerHTML = metaHtml;
+
+    document.getElementById('pvTo').innerHTML = escapeHtml(toInfo).replace(/\n/g, '<br>');
+  }
+
+  document.getElementById('submitDate').value = todayStr();
+  render();
+})();
+</script>
+</body>
+</html>
