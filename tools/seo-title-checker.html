@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEOタイトル・ディスクリプション文字数チェッカー | ASM Lab</title>
+<meta name="description" content="ページタイトルとメタディスクリプションが検索結果で見切れないか、その場で確認できる無料ツールです。Google検索結果のプレビュー表示・文字数・キーワードの含有チェックまで、ブラウザ内だけで完結します。">
+<link rel="canonical" href="https://ashmaru1.github.io/asm-lab-site/tools/seo-title-checker.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="SEOタイトル・ディスクリプション文字数チェッカー | ASM Lab">
+<meta property="og:description" content="ページタイトルとメタディスクリプションが検索結果で見切れないか、その場で確認できる無料ツールです。">
+<meta property="og:url" content="https://ashmaru1.github.io/asm-lab-site/tools/seo-title-checker.html">
+<meta property="og:site_name" content="ASM Lab">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../styles.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"SEOタイトル・ディスクリプション文字数チェッカー","applicationCategory":"BusinessApplication","operatingSystem":"Any (ブラウザ)","offers":{"@type":"Offer","price":"0","priceCurrency":"JPY"},"description":"ページタイトルとメタディスクリプションが検索結果で見切れないかを確認できる無料ツール","url":"https://ashmaru1.github.io/asm-lab-site/tools/seo-title-checker.html"}</script>
+<style>
+  .tool-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+  @media (min-width: 880px) {
+    .tool-grid { grid-template-columns: 1fr 1fr; align-items: start; }
+  }
+  .field { margin-bottom: 1.1rem; }
+  .field label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.78rem;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+    letter-spacing: 0.03em;
+  }
+  .field label .count { font-size: 0.75rem; }
+  .field label .count.warn { color: var(--accent); font-weight: 700; }
+  .field input, .field textarea {
+    width: 100%;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--fg);
+    font-family: inherit;
+    font-size: 0.95rem;
+  }
+  .field textarea { resize: vertical; min-height: 4.5rem; }
+
+  /* Google SERP preview */
+  #preview {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1.8rem;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 1.5rem;
+  }
+  .serp-label { font-size: 0.72rem; font-family: 'Space Mono', monospace; color: var(--muted); margin-bottom: 0.8rem; letter-spacing: 0.03em; }
+  .serp-box { font-family: Arial, "Hiragino Sans", "Meiryo", sans-serif; margin-bottom: 1rem; }
+  .serp-site { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; color: #202124; margin-bottom: 0.2rem; }
+  .serp-favicon { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .serp-url { color: #202124; font-size: 0.8rem; }
+  .serp-title { color: #1a0dab; font-size: 1.15rem; line-height: 1.3; margin: 0.1rem 0 0.25rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+  .serp-desc { color: #4d5156; font-size: 0.84rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .serp-mobile { max-width: 380px; margin: 0 auto; padding: 1rem; border: 1px solid var(--line); border-radius: 10px; }
+  .serp-desktop { padding: 1rem; border: 1px solid var(--line); border-radius: 10px; }
+
+  .verdict-list { list-style: none; padding: 0; margin: 1rem 0 0; font-size: 0.85rem; }
+  .verdict-list li { padding: 0.4rem 0; border-top: 1px solid var(--line); display: flex; gap: 0.5rem; }
+  .verdict-list li:first-child { border-top: none; }
+  .v-ok { color: #2e7d32; }
+  .v-warn { color: var(--accent); font-weight: 700; }
+
+  .guide-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin: 1rem 0; }
+  .guide-table th, .guide-table td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--line); }
+  .guide-table th { font-size: 0.75rem; color: var(--muted); font-weight: 400; }
+</style>
+</head>
+<body>
+<header>
+  <div class="inner">
+    <a class="brand" href="../index.html">ASM Lab</a>
+    <div class="tagline">Daily Goods, Compared.</div>
+  </div>
+</header>
+<main>
+
+<h1>SEOタイトル・ディスクリプション文字数チェッカー</h1>
+<p class="lede">ページタイトルとメタディスクリプションを入力すると、Google検索結果でどう見えるか、文字数は適切か、見切れ(切り詰め)が起きないかをその場で確認できます。入力内容はこのブラウザの中だけで処理され、どこにも送信されません。</p>
+
+<div class="tool-grid">
+  <div>
+    <div class="field">
+      <label><span>対象キーワード(任意)</span></label>
+      <input type="text" id="keyword" placeholder="例: 見積書 無料 作成">
+    </div>
+    <div class="field">
+      <label><span>ページタイトル(&lt;title&gt;)</span><span class="count" id="titleCount">0文字</span></label>
+      <input type="text" id="titleInput" placeholder="例: 見積書かんたん作成ツール | ASM Lab" maxlength="120">
+    </div>
+    <div class="field">
+      <label><span>メタディスクリプション</span><span class="count" id="descCount">0文字</span></label>
+      <textarea id="descInput" placeholder="例: 発注者名・品目・単価を入力するだけで、印刷できる見積書をその場で作成できる無料ツールです。" maxlength="300"></textarea>
+    </div>
+    <div class="field">
+      <label><span>表示URL(プレビュー用、任意)</span></label>
+      <input type="text" id="urlInput" placeholder="例: https://example.com/page">
+    </div>
+
+    <h2>目安の文字数</h2>
+    <table class="guide-table">
+      <thead><tr><th>項目</th><th>推奨文字数の目安</th></tr></thead>
+      <tbody>
+        <tr><td>タイトル(PC表示)</td><td>全角30〜32文字程度まで(それ以上は「…」で省略されやすい)</td></tr>
+        <tr><td>タイトル(スマホ表示)</td><td>全角22〜26文字程度まで(PCより短く切れる)</td></tr>
+        <tr><td>ディスクリプション</td><td>全角90〜120文字程度(長すぎる分は表示されない)</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:0.82rem; color:var(--muted);">※ 実際の見切れ幅は文字の種類(全角・半角混在)やGoogle側の表示アルゴリズムにより変動します。目安としてご利用ください。</p>
+  </div>
+
+  <div id="preview">
+    <div class="serp-label">プレビュー(PC)</div>
+    <div class="serp-desktop">
+      <div class="serp-box">
+        <div class="serp-site"><span class="serp-favicon"></span><span class="serp-url" id="pvUrlPc">example.com › page</span></div>
+        <div class="serp-title" id="pvTitlePc">ページタイトルがここに表示されます</div>
+        <div class="serp-desc" id="pvDescPc">メタディスクリプションがここに表示されます。</div>
+      </div>
+    </div>
+    <div class="serp-label" style="margin-top:1.2rem;">プレビュー(スマホ)</div>
+    <div class="serp-mobile">
+      <div class="serp-box">
+        <div class="serp-site"><span class="serp-favicon"></span><span class="serp-url" id="pvUrlSp">example.com</span></div>
+        <div class="serp-title" id="pvTitleSp" style="white-space:normal; -webkit-line-clamp:2; display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden;">ページタイトルがここに表示されます</div>
+        <div class="serp-desc" id="pvDescSp">メタディスクリプションがここに表示されます。</div>
+      </div>
+    </div>
+
+    <ul class="verdict-list" id="verdictList"></ul>
+  </div>
+</div>
+
+<h2>このツールについて</h2>
+<p>Googleの検索結果のタイトル・ディスクリプションの表示幅は、文字の種類やその時々の検索結果画面の仕様によって変わるため、このツールの判定は目安です。実際に検索結果でどう表示されるかは、公開後にGoogle Search Consoleの「URL検査」ツールなどで確認することをおすすめします。</p>
+
+<h2>あわせて読みたい</h2>
+<ul>
+  <li><a href="estimate-generator.html">見積書かんたん作成ツール(無料ツール)</a></li>
+  <li><a href="https://note.com/fatefullife/n/n98a59624be24">経費精算でよく弾かれる項目、事前に確認すべきポイント(note、¥100)</a></li>
+</ul>
+
+</main>
+<footer>
+  <div>
+    <a href="../privacy.html">プライバシーポリシー</a>
+    <a href="../tokushoho.html">特定商取引法に基づく表示</a>
+  </div>
+  <div>&copy; ASM</div>
+</footer>
+
+<script>
+(function () {
+  const titleInput = document.getElementById('titleInput');
+  const descInput = document.getElementById('descInput');
+  const urlInput = document.getElementById('urlInput');
+  const keywordInput = document.getElementById('keyword');
+
+  function fullWidthLen(s) {
+    // 全角換算の文字数(半角英数字・記号は0.5文字として計算)
+    let len = 0;
+    for (const ch of s) {
+      len += /[\x20-\x7E]/.test(ch) ? 0.5 : 1;
+    }
+    return len;
+  }
+
+  function render() {
+    const title = titleInput.value;
+    const desc = descInput.value;
+    const url = urlInput.value.trim();
+    const keyword = keywordInput.value.trim();
+
+    const titleLen = fullWidthLen(title);
+    const descLen = fullWidthLen(desc);
+
+    const titleCountEl = document.getElementById('titleCount');
+    titleCountEl.textContent = Math.round(titleLen * 10) / 10 + '文字(全角換算)';
+    titleCountEl.classList.toggle('warn', titleLen > 32);
+
+    const descCountEl = document.getElementById('descCount');
+    descCountEl.textContent = Math.round(descLen * 10) / 10 + '文字(全角換算)';
+    descCountEl.classList.toggle('warn', descLen > 120);
+
+    document.getElementById('pvTitlePc').textContent = title || 'ページタイトルがここに表示されます';
+    document.getElementById('pvTitleSp').textContent = title || 'ページタイトルがここに表示されます';
+    document.getElementById('pvDescPc').textContent = desc || 'メタディスクリプションがここに表示されます。';
+    document.getElementById('pvDescSp').textContent = desc || 'メタディスクリプションがここに表示されます。';
+
+    let displayUrl = url || 'example.com/page';
+    displayUrl = displayUrl.replace(/^https?:\/\//, '');
+    const urlParts = displayUrl.split('/').filter(Boolean);
+    const pcUrl = urlParts.length > 1 ? urlParts[0] + ' › ' + urlParts.slice(1).join(' › ') : displayUrl;
+    document.getElementById('pvUrlPc').textContent = pcUrl;
+    document.getElementById('pvUrlSp').textContent = urlParts[0] || displayUrl;
+
+    const verdicts = [];
+    if (!title) {
+      verdicts.push({ ok: false, text: 'タイトルが未入力です' });
+    } else if (titleLen > 32) {
+      verdicts.push({ ok: false, text: 'タイトルが長め(全角' + Math.round(titleLen) + '文字)です。PCで末尾が「…」で省略される可能性があります' });
+    } else {
+      verdicts.push({ ok: true, text: 'タイトルの長さは適切な範囲です' });
+    }
+
+    if (!desc) {
+      verdicts.push({ ok: false, text: 'ディスクリプションが未入力です' });
+    } else if (descLen > 120) {
+      verdicts.push({ ok: false, text: 'ディスクリプションが長め(全角' + Math.round(descLen) + '文字)です。表示が途中で切れる可能性があります' });
+    } else {
+      verdicts.push({ ok: true, text: 'ディスクリプションの長さは適切な範囲です' });
+    }
+
+    if (keyword) {
+      const inTitle = title.includes(keyword);
+      const inDesc = desc.includes(keyword);
+      if (inTitle && title.indexOf(keyword) <= 10) {
+        verdicts.push({ ok: true, text: 'キーワードがタイトルの前半に含まれています' });
+      } else if (inTitle) {
+        verdicts.push({ ok: false, text: 'キーワードはタイトルに含まれていますが、後半にあります。前半に配置すると視認性が上がります' });
+      } else {
+        verdicts.push({ ok: false, text: 'キーワードがタイトルに含まれていません' });
+      }
+      verdicts.push({ ok: inDesc, text: inDesc ? 'キーワードがディスクリプションに含まれています' : 'キーワードがディスクリプションに含まれていません' });
+    }
+
+    document.getElementById('verdictList').innerHTML = verdicts.map(function (v) {
+      return '<li><span class="' + (v.ok ? 'v-ok' : 'v-warn') + '">' + (v.ok ? '✓' : '!') + '</span><span>' + escapeHtml(v.text) + '</span></li>';
+    }).join('');
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  [titleInput, descInput, urlInput, keywordInput].forEach(function (el) {
+    el.addEventListener('input', render);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
