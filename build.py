@@ -12,6 +12,7 @@ content/published/*.md と legal/*.md をHTMLに変換して site/ 以下に出�
 - > 引用(開示文言用)
 - 通常の段落
 """
+import json
 import re
 import sys
 from pathlib import Path
@@ -36,6 +37,7 @@ TEMPLATE = """<!DOCTYPE html>
 <meta property="og:site_name" content="ASM Lab">
 <meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="{css_path}styles.css">
+<script type="application/ld+json">{json_ld}</script>
 </head>
 <body>
 <header>
@@ -59,9 +61,9 @@ TEMPLATE = """<!DOCTYPE html>
 """
 
 
-def make_description(meta, body_md):
+def make_description_raw(meta, body_md):
     if meta.get("description"):
-        return escape_attr(meta["description"])
+        return meta["description"]
     for line in body_md.splitlines():
         s = line.strip()
         if not s or s.startswith(("#", ">", "|", "-", "*")):
@@ -70,8 +72,8 @@ def make_description(meta, body_md):
         s = re.sub(r"\[(.+?)\]\([^)]*\)", r"\1", s)
         if len(s) > 110:
             s = s[:110] + "…"
-        return escape_attr(s)
-    return escape_attr("ASM Labの記事です。")
+        return s
+    return "ASM Labの記事です。"
 
 
 def escape_attr(text):
@@ -98,7 +100,7 @@ def inline(text):
     # Content uses bare [商品A]-style bracket placeholders that are often
     # immediately followed by an unrelated "(...)" aside in the same sentence
     # (e.g. "[商品A]か[商品E](計量不要)"), which must NOT become a link.
-    text = re.sub(r"\[(.+?)\]\((https?://[^)]+|/[^)]*|#[^)]*)\)", r'<a href="\2">\1</a>', text)
+    text = re.sub(r"\[(.+?)\]\((https?://[^)]+|/[^)]*|#[^)]*|[^)]+\.html)\)", r'<a href="\2">\1</a>', text)
     return text
 
 
@@ -196,14 +198,28 @@ def build_file(src: Path, dest: Path, css_path: str, noindex: bool = False):
     meta, body_md = parse_frontmatter(src.read_text(encoding="utf-8"))
     title = meta.get("title", src.stem)
     body_html = md_to_html(body_md)
-    description = make_description(meta, body_md)
+    description_raw = make_description_raw(meta, body_md)
+    description = escape_attr(description_raw)
     canonical_url = SITE_BASE_URL + str(dest.relative_to(SITE)).replace("\\", "/")
     robots_tag = '<meta name="robots" content="noindex">\n' if noindex else ""
+    json_ld_obj = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": title,
+        "description": description_raw,
+        "url": canonical_url,
+        "author": {"@type": "Organization", "name": "ASM Lab"},
+        "publisher": {"@type": "Organization", "name": "ASM Lab"},
+    }
+    if meta.get("published_date"):
+        json_ld_obj["datePublished"] = meta["published_date"]
+    json_ld = json.dumps(json_ld_obj, ensure_ascii=False)
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(
         TEMPLATE.format(
             title=title, body=body_html, css_path=css_path,
             description=description, canonical_url=canonical_url, robots_tag=robots_tag,
+            json_ld=json_ld,
         ),
         encoding="utf-8",
     )
@@ -238,6 +254,7 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="1lZRr2zLAvVKtqpzvnTM5ouW3G6ah2zVlyirORgRIZU" />
 <title>ASM Lab | 日用品・消耗品の比較記録</title>
 <meta name="description" content="毎日使う消耗品・日用品を、価格やレビューをもとに比較する記録サイト。">
 <link rel="canonical" href="{base_url}">
@@ -248,6 +265,7 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
 <meta property="og:site_name" content="ASM Lab">
 <meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="styles.css">
+<script type="application/ld+json">{json_ld}</script>
 </head>
 <body>
 <header>
@@ -292,7 +310,17 @@ def build_index():
             f'<span class="index-meta">{md_file.stem[:8]}</span>'
             f"</a></li>"
         )
-    (SITE / "index.html").write_text(INDEX_TEMPLATE.format(items="\n".join(items), base_url=SITE_BASE_URL), encoding="utf-8")
+    json_ld = json.dumps({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "ASM Lab",
+        "url": SITE_BASE_URL,
+        "description": "毎日使う消耗品・日用品を、価格やレビューをもとに比較する記録サイト。",
+    }, ensure_ascii=False)
+    (SITE / "index.html").write_text(
+        INDEX_TEMPLATE.format(items="\n".join(items), base_url=SITE_BASE_URL, json_ld=json_ld),
+        encoding="utf-8",
+    )
     print("built: site/index.html")
 
 
