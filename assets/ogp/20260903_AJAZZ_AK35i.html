@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1200px; height:630px; overflow:hidden; }
+  body {
+    font-family:'Noto Sans JP', sans-serif;
+    background: linear-gradient(135deg,#1c1f24 0%,#2a2f38 55%,#3a4250 100%);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:80px 90px;
+    color:#f4f1ea;
+  }
+  .bg-key {
+    position:absolute;
+    right:-60px;
+    bottom:-60px;
+    width:520px;
+    height:520px;
+    border-radius:28px;
+    background: linear-gradient(155deg,#4a5568 0%,#2d3340 100%);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.45);
+    transform: rotate(-8deg);
+  }
+  .bg-key::before {
+    content:"";
+    position:absolute;
+    inset:36px;
+    border-radius:16px;
+    background:
+      repeating-linear-gradient(0deg, transparent 0 38px, rgba(255,255,255,0.05) 38px 40px),
+      repeating-linear-gradient(90deg, transparent 0 38px, rgba(255,255,255,0.05) 38px 40px);
+  }
+  .bg-key::after {
+    content:"AK35i";
+    position:absolute;
+    left:50%; top:50%;
+    transform: translate(-50%,-50%) rotate(0deg);
+    font-size:40px;
+    font-weight:900;
+    color:rgba(255,255,255,0.16);
+    letter-spacing:2px;
+  }
+  .badge {
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    background:rgba(232,168,124,0.16);
+    border:1px solid #e8a87c;
+    color:#e8a87c;
+    font-weight:700;
+    font-size:24px;
+    padding:10px 24px;
+    border-radius:999px;
+    width:fit-content;
+    margin-bottom:36px;
+    letter-spacing:1px;
+  }
+  h1 {
+    font-size:64px;
+    font-weight:900;
+    line-height:1.35;
+    max-width:760px;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.35);
+  }
+  .sub {
+    margin-top:28px;
+    font-size:30px;
+    font-weight:500;
+    color:#c9cdd6;
+    max-width:700px;
+    line-height:1.5;
+  }
+  .brand {
+    position:absolute;
+    left:90px;
+    bottom:56px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    font-size:30px;
+    font-weight:700;
+    color:#f4f1ea;
+  }
+  .brand .dot {
+    width:14px; height:14px; border-radius:50%;
+    background:#e8a87c;
+  }
+</style>
+</head>
+<body>
+  <div class="bg-key"></div>
+  <div class="badge">実機レビュー・長期愛用中</div>
+  <h1>打鍵音、思ったより<br>静かでした。</h1>
+  <div class="sub">AJAZZ AK35i(茶軸)を実際に使ってみた感想</div>
+  <div class="brand"><span class="dot"></span>ASM Lab</div>
+</body>
+</html>
